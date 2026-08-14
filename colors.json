@@ -1,7 +1,7 @@
 [
   { "name": "桜色", "reading": "さくらいろ", "hex": "#FEF4F4", "category": "赤・ピンク系", "slug": "sakura-iro" },
   { "name": "鴇色", "reading": "ときいろ", "hex": "#F4B3C2", "category": "赤・ピンク系", "slug": "toki-iro" },
-  { "name": "緋色", "reading: "ひいろ", "hex": "#D3381C", "category": "赤・ピンク系", "slug": "hi-iro" },
+  { "name": "緋色", "reading": "ひいろ", "hex": "#D3381C", "category": "赤・ピンク系", "slug": "hi-iro" },
   { "name": "山吹色", "reading": "やまぶきいろ", "hex": "#FFBF00", "category": "黄系", "slug": "yamabuki-iro" },
   { "name": "萌黄", "reading": "もえぎ", "hex": "#A8D38D", "category": "緑系", "slug": "moegi" },
   { "name": "浅葱色", "reading": "あさぎいろ", "hex": "#00A3AF", "category": "青・緑系", "slug": "asagi-iro" },
