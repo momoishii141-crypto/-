@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>着物・帯 伝統色判別ツール</title>
+  <style>
+    :root {
+      --primary: #824880; /* 茄子紺風のメインカラー */
+      --bg: #fdfbf7;
+      --card-bg: #ffffff;
+      --text: #333333;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 16px;
+      padding-bottom: 40px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 1.4rem;
+      color: var(--primary);
+      margin-bottom: 6px;
+      letter-spacing: 0.05em;
+    }
+    p.sub { font-size: 0.85rem; color: #666; }
+
+    /* 入力エリア */
+    .controls {
+      background: var(--card-bg);
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .btn-upload {
+      display: inline-block;
+      background-color: var(--primary);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-weight: bold;
+      font-size: 0.95rem;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(130, 72, 128, 0.3);
+      transition: opacity 0.2s;
+    }
+    .btn-upload:active { opacity: 0.8; }
+    input[type="file"] { display: none; }
+
+    /* キャンバス＆ルーペ エリア */
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      background: #eee;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      display: none;
+      touch-action: none; /* スマホの画面スクロールを防止して操作しやすくする */
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .instruction {
+      font-size: 0.8rem;
+      color: #777;
+      text-align: center;
+      margin-top: 6px;
+    }
+
+    /* 拡大鏡（ルーペ） */
+    .loupe {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      pointer-events: none;
+      display: none;
+      transform: translate(-50%, -120%); /* 指で隠れないよう少し上に表示 */
+      background-repeat: no-repeat;
+      overflow: hidden;
+    }
+    .loupe::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 8px; height: 8px;
+      border: 1.5px solid red;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    /* 結果カード */
+    .result-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .color-swatch {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 2px solid #eee;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+      flex-shrink: 0;
+    }
+    .color-title h2 { font-size: 1.5rem; color: #111; margin-bottom: 2px; }
+    .color-title .ruby { font-size: 0.85rem; color: #666; font-weight: normal; }
+
+    .color-info {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: #444;
+      background: #faffef;
+      padding: 12px;
+      border-radius: 8px;
+      border-left: 4px solid var(--primary);
+      margin-bottom: 16px;
+    }
+
+    .btn-link {
+      display: block;
+      text-align: center;
+      background-color: #f4f0f5;
+      color: var(--primary);
+      text-decoration: none;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+    .btn-link:hover { background-color: #e9e0eb; }
+  </style>
+  <!-- 無料の色比較ライブラリ (culori) -->
+  <script src="https://unpkg.com/culori"></script>
+</head>
+<body>
+
+  <header>
+    <h1>👘 着物・帯 伝統色判別</h1>
+    <p class="sub">写真を撮ってタップすると最も近い伝統色を特定します</p>
+  </header>
+
+  <div class="controls">
+    <label class="btn-upload">
+      📷 写真を選択・撮影
+      <input type="file" id="upload" accept="image/*" capture="environment">
+    </label>
+  </div>
+
+  <div class="canvas-container" id="canvasContainer">
+    <canvas id="canvas"></canvas>
+    <div class="loupe" id="loupe"></div>
+  </div>
+  <p class="instruction" id="instruction" style="display:none;">※写真の「色を調べたい場所（身頃や帯）」を指でなぞるかタップしてください</p>
+
+  <div class="result-card" id="resultCard">
+    <div class="result-header">
+      <div class="color-swatch" id="swatch"></div>
+      <div class="color-title">
+        <div class="ruby" id="colorReading">--</div>
+        <h2 id="colorName">--</h2>
+      </div>
+    </div>
+    <div class="color-info" id="colorCategory">
+      カテゴリ: --
+    </div>
+    <a id="irocoreLink" class="btn-link" href="#" target="_blank" rel="noopener">
+      「伝統色のいろは」で詳しい解説を見る ↗
+    </a>
+  </div>
+
+  <script>
+    // --------------------------------------------------
+    // 0. 簡易パスワード保護 (不要ならこのブロックを削除してください)
+    // --------------------------------------------------
+    const PASS = "kimono"; // ←合言葉を設定（変更可能）
+    const userPass = prompt("パスワードを入力してください:");
+    if (userPass !== PASS) {
+      alert("パスワードが違います");
+      document.body.innerHTML = "<h3 style='text-align:center; margin-top:50px;'>アクセス権限がありません</h3>";
+    }
+
+    // --------------------------------------------------
+    // 1. 伝統色データベース（irocore.com の構造準拠）
+    // --------------------------------------------------
+    let traditionalColors = [];
+
+    // colors.json を外部読み込み（無ければフォールバックデータを使用）
+    fetch('colors.json')
+      .then(res => res.json())
+      .then(data => { traditionalColors = data; })
+      .catch(() => {
+        // colors.json が無い場合の初期データ（例）
+        traditionalColors = [
+          { name: "桜色", reading: "さくらいろ", hex: "#FEF4F4", category: "赤・ピンク系", slug: "sakura-iro" },
+          { name: "茄子紺", reading: "なすこん", hex: "#824880", category: "紫系", slug: "nasu-kon" },
+          { name: "浅葱色", reading: "あさぎいろ", hex: "#00A3AF", category: "青・緑系", slug: "asagi-iro" },
+          { name: "山吹色", reading: "やまぶきいろ", hex: "#FFBF00", category: "黄系", slug: "yamabuki-iro" },
+          { name: "鴇色", reading: "ときいろ", hex: "#F4B3C2", category: "赤・ピンク系", slug: "toki-iro" },
+          { name: "胡粉色", reading: "ごふんいろ", hex: "#FFFFF0", category: "白・無彩色", slug: "gofun-iro" },
+          { name: "墨色", reading: "すみいろ", hex: "#333333", category: "黒・無彩色", slug: "sumi-iro" }
+        ];
+      });
+
+    // --------------------------------------------------
+    // 2. DOM要素とイベント設定
+    // --------------------------------------------------
+    const upload = document.getElementById('upload');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('canvasContainer');
+    const loupe = document.getElementById('loupe');
+    const instruction = document.getElementById('instruction');
+
+    let imgObj = null;
+
+    // 写真の読み込み
+    upload.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const img = new Image();
+      img.onload = () => {
+        imgObj = img;
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+
+        container.style.display = 'block';
+        instruction.style.display = 'block';
+        document.getElementById('resultCard').style.display = 'none';
+
+        // ルーペの背景に画像をセット
+        loupe.style.backgroundImage = `url(${img.src})`;
+      };
+      img.src = URL.createObjectURL(file);
+    });
+
+    // タップ／ドラッグで色取得
+    function handlePointer(e) {
+      if (!imgObj) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+      // キャンバス内の相対座標 (0 ~ 1)
+      const relX = (clientX - rect.left) / rect.width;
+      const relY = (clientY - rect.top) / rect.height;
+
+      if (relX < 0 || relX > 1 || relY < 0 || relY > 1) {
+        loupe.style.display = 'none';
+        return;
+      }
+
+      // 実際の画像のピクセル座標
+      const x = Math.floor(relX * canvas.width);
+      const y = Math.floor(relY * canvas.height);
+
+      // ルーペの位置とズーム更新
+      loupe.style.display = 'block';
+      loupe.style.left = `${clientX - rect.left}px`;
+      loupe.style.top = `${clientY - rect.top}px`;
+      loupe.style.backgroundSize = `${rect.width * 3}px ${rect.height * 3}px`;
+      loupe.style.backgroundPosition = `-${relX * rect.width * 3 - 40}px -${relY * rect.height * 3 - 40}px`;
+
+      // 選択箇所の平均RGBを取得（3x3ピクセル）
+      const pixelData = getAverageRgb(x, y);
+      
+      // 最も近い伝統色を特定
+      identifyColor(pixelData);
+    }
+
+    // 周辺3x3ピクセルの平均RGBを出す（ノイズ軽減）
+    function getAverageRgb(x, y) {
+      const sampleSize = 3;
+      const imageData = ctx.getImageData(
+        Math.max(0, x - 1), 
+        Math.max(0, y - 1), 
+        sampleSize, sampleSize
+      );
+      const data = imageData.data;
+      let r = 0, g = 0, b = 0, count = 0;
+
+      for (let i = 0; i < data.length; i += 4) {
+        r += data[i];
+        g += data[i + 1];
+        b += data[i + 2];
+        count++;
+      }
+      return { r: Math.round(r / count), g: Math.round(g / count), b: Math.round(b / count) };
+    }
+
+    // イベントリスナー登録（スマホのタッチ・PCのマウス両対応）
+    ['touchstart', 'touchmove', 'mousedown', 'mousemove'].forEach(evt => {
+      container.addEventListener(evt, (e) => {
+        if (e.type === 'mousedown' && e.buttons !== 1) return; // 左クリック時のみ
+        handlePointer(e);
+      });
+    });
+
+    ['touchend', 'mouseup'].forEach(evt => {
+      container.addEventListener(evt, () => {
+        loupe.style.display = 'none';
+      });
+    });
+
+    // --------------------------------------------------
+    // 3. 伝統色の判別ロジック（CIEDE2000 色差アルゴリズム）
+    // --------------------------------------------------
+    function identifyColor(targetRgb) {
+      if (traditionalColors.length === 0) return;
+
+      const targetRgbStr = `rgb(${targetRgb.r}, ${targetRgb.g}, ${targetRgb.b})`;
+      let closest = null;
+      let minDistance = Infinity;
+
+      traditionalColors.forEach(color => {
+        // culoriライブラリで高精度な色差（ΔE）を計算
+        const distance = culori.differenceCiede2000()(targetRgbStr, color.hex);
+        if (distance < minDistance) {
+          minDistance = distance;
+          closest = color;
+        }
+      });
+
+      if (closest) {
+        showResult(closest);
+      }
+    }
+
+    // 結果表示
+    function showResult(color) {
+      document.getElementById('resultCard').style.display = 'block';
+      document.getElementById('swatch').style.backgroundColor = color.hex;
+      document.getElementById('colorName').innerText = color.name;
+      document.getElementById('colorReading').innerText = color.reading;
+      document.getElementById('colorCategory').innerText = `系統: ${color.category || '伝統色'}`;
+      document.getElementById('irocoreLink').href = `https://irocore.com/${color.slug}/`;
+    }
+  </script>
+</body>
+</html>

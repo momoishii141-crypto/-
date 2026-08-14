@@ -1,0 +1,13 @@
+[
+  { "name": "桜色", "reading": "さくらいろ", "hex": "#FEF4F4", "category": "赤・ピンク系", "slug": "sakura-iro" },
+  { "name": "鴇色", "reading": "ときいろ", "hex": "#F4B3C2", "category": "赤・ピンク系", "slug": "toki-iro" },
+  { "name": "緋色", "reading: "ひいろ", "hex": "#D3381C", "category": "赤・ピンク系", "slug": "hi-iro" },
+  { "name": "山吹色", "reading": "やまぶきいろ", "hex": "#FFBF00", "category": "黄系", "slug": "yamabuki-iro" },
+  { "name": "萌黄", "reading": "もえぎ", "hex": "#A8D38D", "category": "緑系", "slug": "moegi" },
+  { "name": "浅葱色", "reading": "あさぎいろ", "hex": "#00A3AF", "category": "青・緑系", "slug": "asagi-iro" },
+  { "name": "紺青", "reading": "こんじょう", "hex": "#112B4C", "category": "青系", "slug": "konjou" },
+  { "name": "茄子紺", "reading": "なすこん", "hex": "#824880", "category": "紫系", "slug": "nasu-kon" },
+  { "name": "藤色", "reading": "ふじいろ", "hex": "#BBBCDE", "category": "紫系", "slug": "fuji-iro" },
+  { "name": "胡粉色", "reading": "ごふんいろ", "hex": "#FFFFF0", "category": "白・無彩色", "slug": "gofun-iro" },
+  { "name": "墨色", "reading": "すみいろ", "hex": "#333333", "category": "黒・無彩色", "slug": "sumi-iro" }
+]
