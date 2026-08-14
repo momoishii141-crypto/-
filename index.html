@@ -18,7 +18,7 @@
       background-color: var(--bg);
       color: var(--text);
       padding: 12px;
-      padding-bottom: 140px; /* 下部固定カードのスペース確保 */
+      padding-bottom: 140px;
       max-width: 600px;
       margin: 0 auto;
     }
@@ -56,11 +56,10 @@
     }
     input[type="file"] { display: none; }
 
-    /* キャンバス＆画像エリア（スマホ画面内に収まる設計） */
     .canvas-container {
       position: relative;
       width: 100%;
-      max-height: 45vh; /* 画面高さの45%までに抑える */
+      max-height: 45vh;
       background: #eee;
       border-radius: 8px;
       overflow: hidden;
@@ -75,7 +74,7 @@
       width: auto;
       height: auto;
       margin: 0 auto;
-      touch-action: none; /* 画像上での操作時のみスクロール防止 */
+      touch-action: none;
     }
     .instruction {
       font-size: 0.75rem;
@@ -84,7 +83,6 @@
       margin-bottom: 12px;
     }
 
-    /* 虫眼鏡ルーペ */
     .loupe {
       position: absolute;
       width: 70px;
@@ -94,7 +92,7 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.4);
       pointer-events: none;
       display: none;
-      transform: translate(-50%, -130%); /* 指で隠れない位置 */
+      transform: translate(-50%, -130%);
       background-repeat: no-repeat;
       overflow: hidden;
       z-index: 10;
@@ -109,7 +107,6 @@
       transform: translate(-50%, -50%);
     }
 
-    /* 下部固定の結果カード（常に画面下に表示） */
     .result-card {
       position: fixed;
       bottom: 0;
@@ -181,7 +178,6 @@
   </div>
   <p class="instruction" id="instruction" style="display:none;">※写真の色を知りたい場所をタップまたは指でなぞってください</p>
 
-  <!-- 画面下部に固定される結果カード -->
   <div class="result-card" id="resultCard">
     <div class="result-header">
       <div class="color-swatch" id="swatch"></div>
@@ -197,7 +193,6 @@
   </div>
 
   <script>
-    // パスワード確認
     const PASS = "kimono";
     const userPass = prompt("パスワードを入力してください:");
     if (userPass !== PASS) {
@@ -207,7 +202,6 @@
 
     let traditionalColors = [];
 
-    // colors.json を読み込み
     fetch('colors.json')
       .then(res => res.json())
       .then(data => { if(Array.isArray(data) && data.length > 0) traditionalColors = data; })
@@ -259,7 +253,6 @@
       const x = Math.floor(relX * canvas.width);
       const y = Math.floor(relY * canvas.height);
 
-      // ルーペの位置（親要素 container 内での座標）
       const containerRect = container.getBoundingClientRect();
       loupe.style.display = 'block';
       loupe.style.left = `${clientX - containerRect.left}px`;
@@ -271,7 +264,6 @@
       identifyColor(rgb);
     }
 
-    // 9x9ピクセル平均
     function getAverageRgb(x, y) {
       const sampleSize = 9;
       const half = Math.floor(sampleSize / 2);
@@ -297,6 +289,27 @@
       window.addEventListener(evt, () => { loupe.style.display = 'none'; });
     });
 
+    // RGBからHSV（色相・彩度・明度）への変換関数
+    function rgbToHsv(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, v = max;
+      const d = max - min;
+      s = max === 0 ? 0 : d / max;
+
+      if (max === min) {
+        h = 0;
+      } else {
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+      }
+      return { h: h * 360, s: s * 100, v: v * 100 };
+    }
+
     function hexToRgb(hex) {
       let c = hex.replace('#', '');
       if (c.length === 3) c = c.split('').map(x => x + x).join('');
@@ -304,19 +317,38 @@
       return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
     }
 
+    // 感度を考慮した色距離計算（HSV強調型）
     function identifyColor(targetRgb) {
       if (!traditionalColors || traditionalColors.length === 0) return;
 
+      const targetHsv = rgbToHsv(targetRgb.r, targetRgb.g, targetRgb.b);
       let closest = null;
       let minDistance = Infinity;
 
       traditionalColors.forEach(color => {
         const cRgb = hexToRgb(color.hex);
+        const cHsv = rgbToHsv(cRgb.r, cRgb.g, cRgb.b);
+
+        // 水色〜青（180°〜240°）および紫（250°〜320°）の判定感度（色相重み付け）をアップ
+        let hueWeight = 2.5; 
+        if ((targetHsv.h >= 170 && targetHsv.h <= 330)) {
+          hueWeight = 4.0; // 青・水色・紫領域は「色合い」の違いをよりシビアに評価
+        }
+
+        // 色相（Hue）の角度差計算（円周距離）
+        let dh = Math.abs(targetHsv.h - cHsv.h);
+        if (dh > 180) dh = 360 - dh;
+
+        const ds = targetHsv.s - cHsv.s;
+        const dv = targetHsv.v - cHsv.v;
+
+        // 加重距離計算
         const dist = Math.sqrt(
-          Math.pow(targetRgb.r - cRgb.r, 2) +
-          Math.pow(targetRgb.g - cRgb.g, 2) +
-          Math.pow(targetRgb.b - cRgb.b, 2)
+          Math.pow(dh * hueWeight, 2) +
+          Math.pow(ds * 1.2, 2) +
+          Math.pow(dv * 0.8, 2)
         );
+
         if (dist < minDistance) {
           minDistance = dist;
           closest = color;
