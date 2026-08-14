@@ -289,25 +289,26 @@
       window.addEventListener(evt, () => { loupe.style.display = 'none'; });
     });
 
-    // RGBからHSV（色相・彩度・明度）への変換関数
-    function rgbToHsv(r, g, b) {
-      r /= 255; g /= 255; b /= 255;
-      const max = Math.max(r, g, b), min = Math.min(r, g, b);
-      let h, s, v = max;
-      const d = max - min;
-      s = max === 0 ? 0 : d / max;
+    // --- 高精度 CIE Lab 色空間変換エンジン ---
+    function rgbToLab(r, g, b) {
+      let r1 = r / 255, g1 = g / 255, b1 = b / 255;
+      r1 = r1 > 0.04045 ? Math.pow((r1 + 0.055) / 1.055, 2.4) : r1 / 12.92;
+      g1 = g1 > 0.04045 ? Math.pow((g1 + 0.055) / 1.055, 2.4) : g1 / 12.92;
+      b1 = b1 > 0.04045 ? Math.pow((b1 + 0.055) / 1.055, 2.4) : b1 / 12.92;
 
-      if (max === min) {
-        h = 0;
-      } else {
-        switch (max) {
-          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-          case g: h = (b - r) / d + 2; break;
-          case b: h = (r - g) / d + 4; break;
-        }
-        h /= 6;
-      }
-      return { h: h * 360, s: s * 100, v: v * 100 };
+      let x = (r1 * 0.4124 + g1 * 0.3576 + b1 * 0.1805) / 0.95047;
+      let y = (r1 * 0.2126 + g1 * 0.7152 + b1 * 0.0722) / 1.00000;
+      let z = (r1 * 0.0193 + g1 * 0.1192 + b1 * 0.9505) / 1.08883;
+
+      x = x > 0.008856 ? Math.cbrt(x) : (7.787 * x) + (16 / 116);
+      y = y > 0.008856 ? Math.cbrt(y) : (7.787 * y) + (16 / 116);
+      z = z > 0.008856 ? Math.cbrt(z) : (7.787 * z) + (16 / 116);
+
+      return {
+        l: (116 * y) - 16,
+        a: 500 * (x - y),
+        b: 200 * (y - z)
+      };
     }
 
     function hexToRgb(hex) {
@@ -317,36 +318,23 @@
       return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
     }
 
-    // 感度を考慮した色距離計算（HSV強調型）
+    // 知覚色差 (CIE76 Delta E) で判別
     function identifyColor(targetRgb) {
       if (!traditionalColors || traditionalColors.length === 0) return;
 
-      const targetHsv = rgbToHsv(targetRgb.r, targetRgb.g, targetRgb.b);
+      const targetLab = rgbToLab(targetRgb.r, targetRgb.g, targetRgb.b);
       let closest = null;
       let minDistance = Infinity;
 
       traditionalColors.forEach(color => {
         const cRgb = hexToRgb(color.hex);
-        const cHsv = rgbToHsv(cRgb.r, cRgb.g, cRgb.b);
+        const cLab = rgbToLab(cRgb.r, cRgb.g, cRgb.b);
 
-        // 水色〜青（180°〜240°）および紫（250°〜320°）の判定感度（色相重み付け）をアップ
-        let hueWeight = 2.5; 
-        if ((targetHsv.h >= 170 && targetHsv.h <= 330)) {
-          hueWeight = 4.0; // 青・水色・紫領域は「色合い」の違いをよりシビアに評価
-        }
-
-        // 色相（Hue）の角度差計算（円周距離）
-        let dh = Math.abs(targetHsv.h - cHsv.h);
-        if (dh > 180) dh = 360 - dh;
-
-        const ds = targetHsv.s - cHsv.s;
-        const dv = targetHsv.v - cHsv.v;
-
-        // 加重距離計算
+        // 人間の知覚に基づく距離計算 (Delta E)
         const dist = Math.sqrt(
-          Math.pow(dh * hueWeight, 2) +
-          Math.pow(ds * 1.2, 2) +
-          Math.pow(dv * 0.8, 2)
+          Math.pow(targetLab.l - cLab.l, 2) +
+          Math.pow(targetLab.a - cLab.a, 2) +
+          Math.pow(targetLab.b - cLab.b, 2)
         );
 
         if (dist < minDistance) {
