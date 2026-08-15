@@ -289,7 +289,7 @@
       window.addEventListener(evt, () => { loupe.style.display = 'none'; });
     });
 
-    // --- 高精度 CIE Lab 色空間変換エンジン ---
+    // --- CIE Lab 空間変換（色味強調仕様） ---
     function rgbToLab(r, g, b) {
       let r1 = r / 255, g1 = g / 255, b1 = b / 255;
       r1 = r1 > 0.04045 ? Math.pow((r1 + 0.055) / 1.055, 2.4) : r1 / 12.92;
@@ -318,7 +318,7 @@
       return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
     }
 
-    // 知覚色差 (CIE76 Delta E) で判別
+    // ★彩度差補正（色味を敏感に検知してグレー逃げをブロック）★
     function identifyColor(targetRgb) {
       if (!traditionalColors || traditionalColors.length === 0) return;
 
@@ -330,12 +330,29 @@
         const cRgb = hexToRgb(color.hex);
         const cLab = rgbToLab(cRgb.r, cRgb.g, cRgb.b);
 
-        // 人間の知覚に基づく距離計算 (Delta E)
+        // 明るさ(dL)と、色味(da, db)を分離
+        const dL = targetLab.l - cLab.l;
+        const da = targetLab.a - cLab.a;
+        const db = targetLab.b - cLab.b;
+
+        // 色味成分(a*, b*)に2.5倍のブーストをかけて「わずかな水色や紫」を正確に評価
+        const chromaWeight = 2.5;
+
+        // グレー系（無彩色）への過剰判定を防止するため、ターゲットに少しでも色味があれば有彩色の優先度をアップ
+        const targetChroma = Math.sqrt(targetLab.a * targetLab.a + targetLab.b * targetLab.b);
+        const colorChroma = Math.sqrt(cLab.a * cLab.a + cLab.b * cLab.b);
+        
+        let penalty = 0;
+        // ターゲットに色味がある(Chroma > 5)のに、候補がグレー系(Chroma < 3)の場合は距離ペナルティを与える
+        if (targetChroma > 5 && colorChroma < 3) {
+          penalty = 30; 
+        }
+
         const dist = Math.sqrt(
-          Math.pow(targetLab.l - cLab.l, 2) +
-          Math.pow(targetLab.a - cLab.a, 2) +
-          Math.pow(targetLab.b - cLab.b, 2)
-        );
+          Math.pow(dL, 2) +
+          Math.pow(da * chromaWeight, 2) +
+          Math.pow(db * chromaWeight, 2)
+        ) + penalty;
 
         if (dist < minDistance) {
           minDistance = dist;
