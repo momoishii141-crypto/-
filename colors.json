@@ -77,7 +77,6 @@
   { "name": "藍色", "reading": "あいいろ", "hex": "#004C71", "category": "青系", "slug": "ai-iro" },
   { "name": "甕覗", "reading": "かめのぞき", "hex": "#C5E4Ed", "category": "青系", "slug": "kamenozoki" },
   { "name": "浅葱色", "reading": "あさぎいろ", "hex": "#00A5BF", "category": "青系", "slug": "asagi-iro" },
-
   { "name": "桃染", "reading": "ももそめ", "hex": "#EFA6AA", "category": "赤・朱系", "slug": "momosome" },
   { "name": "滅赤", "reading": "けしあか", "hex": "#BD6748", "category": "赤・朱系", "slug": "keshiaka" },
   { "name": "赤蘇芳", "reading": "あかすおう", "hex": "#D34C2C", "category": "赤・朱系", "slug": "akasuou" },
@@ -137,7 +136,6 @@
   { "name": "赤橙", "reading": "あかだいだい", "hex": "#EA5532", "category": "赤・朱系", "slug": "akadaidai" },
   { "name": "茶褐色", "reading": "ちゃかっしょく", "hex": "#664032", "category": "赤・朱系", "slug": "chakasshoku" },
   { "name": "赤褐色", "reading": "せっかっしょく", "hex": "#683F36", "category": "赤・朱系", "slug": "sekkashoku" },
-  { "name": "深紅", "reading": "しんく", "hex": "#AD002D", "category": "赤・朱系", "slug": "shinku" },
   { "name": "栗色", "reading": "くりいろ", "hex": "#762F07", "category": "赤・朱系", "slug": "kuri-iro" },
   { "name": "朱色", "reading": "しゅいろ", "hex": "#EB6101", "category": "赤・朱系", "slug": "shu-iro" },
   { "name": "紅鼠", "reading": "べにねず", "hex": "#B4817D", "category": "赤・朱系", "slug": "beninezu" },
@@ -167,7 +165,6 @@
   { "name": "猩々緋", "reading": "しょうじょうひ", "hex": "#E2421F", "category": "赤・朱系", "slug": "shojohi" },
   { "name": "珊瑚色", "reading": "さんごいろ", "hex": "#F5AD90", "category": "赤・朱系", "slug": "sango-iro" },
   { "name": "曙色", "reading": "あけぼの色", "hex": "#F19072", "category": "赤・朱系", "slug": "akebono-iro" },
-  { "name": "栗色", "reading": "くりいろ", "hex": "#762F07", "category": "赤・朱系", "slug": "kuri-iro" },
   { "name": "海老茶", "reading": "えびちゃ", "hex": "#773C30", "category": "赤・朱系", "slug": "ebicha" },
   { "name": "葡萄茶", "reading": "えびちゃ", "hex": "#6C2C2F", "category": "赤・朱系", "slug": "ebicha-2" },
   { "name": "小豆色", "reading": "あずきいろ", "hex": "#96514D", "category": "赤・朱系", "slug": "azuki-iro" },
@@ -186,7 +183,6 @@
   { "name": "中紅", "reading": "なかべに", "hex": "#C85179", "category": "赤・朱系", "slug": "nakabeni" },
   { "name": "一斤染", "reading": "いっきんぞめ", "hex": "#F5C9C6", "category": "赤・朱系", "slug": "ikkinzome" },
   { "name": "桃色", "reading": "ももいろ", "hex": "#F09199", "category": "赤・朱系", "slug": "momo-iro" },
-
   { "name": "真鍮色", "reading": "しんちゅういろ", "hex": "#BEA82E", "category": "黄・茶系", "slug": "shinchu-iro" },
   { "name": "向日葵色", "reading": "ひまわりいろ", "hex": "#FCCA00", "category": "黄・茶系", "slug": "himawari-iro" },
   { "name": "鼈甲色", "reading": "べっこういろ", "hex": "#CE9B0E", "category": "黄・茶系", "slug": "bekko-iro" },
@@ -253,7 +249,6 @@
   { "name": "支子色", "reading": "くちなしいろ", "hex": "#FFD768", "category": "黄・茶系", "slug": "kuchinashi-iro-2" },
   { "name": "蘇比", "reading": "そひ", "hex": "#FBA027", "category": "黄・茶系", "slug": "sohi" },
   { "name": "黄丹", "reading": "おうに", "hex": "#EE7948", "category": "黄・茶系", "slug": "ouni" },
-
   { "name": "夏虫色", "reading": "なつむしいろ", "hex": "#316745", "category": "緑系", "slug": "natsumushi-iro" },
   { "name": "玉虫色", "reading": "たまむしいろ", "hex": "#00562B", "category": "緑系", "slug": "tamamushi-iro" },
   { "name": "黄緑", "reading": "きみどり", "hex": "#B9C42F", "category": "緑系", "slug": "kimidori" },
@@ -294,7 +289,7 @@
   { "name": "左伊多津万色", "reading": "さいたづまいろ", "hex": "#327131", "category": "緑系", "slug": "saitaduma-iro" },
   { "name": "胆礬色", "reading": "たんばんいろ", "hex": "#007D7A", "category": "緑系", "slug": "tanba-iro" },
   { "name": "裏葉柳", "reading": "うらはやなぎ", "hex": "#C1D8AC", "category": "緑系", "slug": "urahayanagi" },
-  { "name": "山鳩色", "reading": "やまばといろ", "hex": "#767C6B", "category": "緑系", "slug": "yamabato-iro" },
+  { "name": "山鳩色", "reading": "やまばtoiろ", "hex": "#767C6B", "category": "緑系", "slug": "yamabato-iro" },
   { "name": "柳煤竹", "reading": "やなぎすすたけ", "hex": "#4A593D", "category": "緑系", "slug": "yanagisusutake" },
   { "name": "天鵞絨", "reading": "びろうど", "hex": "#00451E", "category": "緑系", "slug": "biroudo" },
   { "name": "若苗色", "reading": "わかなえいろ", "hex": "#C7DC68", "category": "緑系", "slug": "wakanae-iro" },
@@ -308,7 +303,7 @@
   { "name": "麹塵", "reading": "きくじん", "hex": "#6E7955", "category": "緑系", "slug": "kikujin" },
   { "name": "薄青", "reading": "うすあお", "hex": "#A0CEA8", "category": "緑系", "slug": "usuao" },
   { "name": "裏柳", "reading": "うらやなぎ", "hex": "#C1D8AC", "category": "緑系", "slug": "urayanagi" },
-  { "name": "沈香茶", "reading": "とのちゃ", "hex": "#84a1a8", "category": "緑系", "slug": "tonocha" },
+  { "name": "沈香茶", "reading": "とのちゃ", "hex": "#84a1a8", "category": "緑系", "slug": "tonocha-2" },
   { "name": "虫襖", "reading": "むしあお", "hex": "#20604F", "category": "緑系", "slug": "mushiao" },
   { "name": "老竹色", "reading": "おいたけいろ", "hex": "#769164", "category": "緑系", "slug": "oitake-iro" },
   { "name": "金春色", "reading": "こんぱるいろ", "hex": "#5AC2D9", "category": "緑系", "slug": "konparu-iro" },
@@ -340,7 +335,6 @@
   { "name": "若竹色", "reading": "わかたけいろ", "hex": "#7CC28E", "category": "緑系", "slug": "wakatake-iro" },
   { "name": "青竹色", "reading": "あおたけいろ", "hex": "#7EBEAB", "category": "緑系", "slug": "aotake-iro" },
   { "name": "深緑", "reading": "ふかみどり", "hex": "#004025", "category": "緑系", "slug": "fukamidori" },
-
   { "name": "牡丹鼠", "reading": "ぼたんねず", "hex": "#98617A", "category": "紫系", "slug": "botannezu" },
   { "name": "花紫", "reading": "はなむらさき", "hex": "#3C317B", "category": "紫系", "slug": "hanamurasaki" },
   { "name": "黒紫", "reading": "くろむらさき", "hex": "#331732", "category": "紫系", "slug": "kuromurasaki" },
@@ -402,7 +396,7 @@
   { "name": "桔梗色", "reading": "ききょういろ", "hex": "#624498", "category": "紫系", "slug": "kikyo-iro" },
   { "name": "菫色", "reading": "すみれいろ", "hex": "#7065A3", "category": "紫系", "slug": "sumire-iro" },
   { "name": "赤紫", "reading": "あかむらさき", "hex": "#920783", "category": "紫系", "slug": "akamurasaki" },
-  { "name": "紫鳶", "reading": "むらさきとび", "hex": "#5F414B", "category": "紫系", "slug": "murasakitobi" }
+  { "name": "紫鳶", "reading": "むらさきとび", "hex": "#5F414B", "category": "紫系", "slug": "murasakitobi" },
   { "name": "猟虎色", "reading": "らっこいろ", "hex": "#AF7E4A", "category": "茶系", "slug": "rakko-iro" },
   { "name": "黒柿", "reading": "くろがき", "hex": "#612E04", "category": "茶系", "slug": "kurogaki" },
   { "name": "黄褐色", "reading": "おうかっしょく", "hex": "#8C4C00", "category": "茶系", "slug": "oukasshoku" },
@@ -476,7 +470,6 @@
   { "name": "柿渋色", "reading": "かきしぶいろ", "hex": "#BD7862", "category": "茶系", "slug": "kakishibu-iro" },
   { "name": "芝翫茶", "reading": "しかんちゃ", "hex": "#BF795D", "category": "茶系", "slug": "shikancha" },
   { "name": "桜鼠", "reading": "さくらねずみ", "hex": "#D8C6BC", "category": "茶系", "slug": "sakuranezumi" },
-
   { "name": "乳白色", "reading": "にゅうはくしょく", "hex": "#FFFDF6", "category": "白系", "slug": "nyuhakushoku" },
   { "name": "玄", "reading": "げん", "hex": "#3E1E00", "category": "黒系", "slug": "gen" },
   { "name": "生成色", "reading": "きなりいろ", "hex": "#F7EFE3", "category": "白系", "slug": "kinari-iro" },
@@ -498,7 +491,7 @@
   { "name": "卯の花色", "reading": "うのはないろ", "hex": "#FBFBF6", "category": "白系", "slug": "unohana-iro" },
   { "name": "鈍色", "reading": "にびいろ", "hex": "#727171", "category": "鼠・灰色系", "slug": "nibi-iro" },
   { "name": "胡粉色", "reading": "ごふんいろ", "hex": "#FFFFFC", "category": "白系", "slug": "gofun-iro" },
-  { "name": "藍墨茶", "reading": "あいすみちゃ", "hex": "#373C38", "category": "黒系", "slug": "aisumicha" },
+  { "name": "藍墨茶", "reading": "あいすみちゃ", "hex": "#373C39", "category": "黒系", "slug": "aisumicha" },
   { "name": "錫色", "reading": "すずいろ", "hex": "#9EA1A3", "category": "鼠・灰色系", "slug": "suzu-iro" },
   { "name": "白練", "reading": "しろねり", "hex": "#FCFAF2", "category": "白系", "slug": "shironeri" },
   { "name": "呂色", "reading": "ろいろ", "hex": "#0c0c0c", "category": "黒系", "slug": "roiro" },
@@ -523,3 +516,5 @@
   { "name": "鼠色", "reading": "ねずみいろ", "hex": "#7D7D7D", "category": "鼠・灰色系", "slug": "nezumi-iro" },
   { "name": "黒鳶", "reading": "くろとび", "hex": "#432F2F", "category": "黒系", "slug": "kurotobi" }
 ]
+
+```
