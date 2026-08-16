@@ -76,7 +76,7 @@
   { "name": "水色", "reading": "みずいろ", "hex": "#7FCCE3", "category": "青系", "slug": "mizu-iro" },
   { "name": "藍色", "reading": "あいいろ", "hex": "#004C71", "category": "青系", "slug": "ai-iro" },
   { "name": "甕覗", "reading": "かめのぞき", "hex": "#C5E4Ed", "category": "青系", "slug": "kamenozoki" },
-  { "name": "浅葱色", "reading": "あさぎいろ", "hex": "#00A5BF", "category": "青系", "slug": "asagi-iro" }
+  { "name": "浅葱色", "reading": "あさぎいろ", "hex": "#00A5BF", "category": "青系", "slug": "asagi-iro" },
 
   { "name": "桃染", "reading": "ももそめ", "hex": "#EFA6AA", "category": "赤・朱系", "slug": "momosome" },
   { "name": "滅赤", "reading": "けしあか", "hex": "#BD6748", "category": "赤・朱系", "slug": "keshiaka" },
