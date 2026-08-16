@@ -307,9 +307,9 @@
       identifyColor(rgb);
     }
 
-    // ① 判定範囲を約2倍（17×17ピクセル）にし、② 最頻色を取得
+    // ★ 判定範囲を10×10ピクセル（計100ピクセル）にし、その中で一番多い色を取得
     function getDominantRgb(x, y) {
-      const sampleSize = 17;
+      const sampleSize = 10; // 10x10 = 100ピクセル
       const half = Math.floor(sampleSize / 2);
       const startX = Math.max(0, x - half);
       const startY = Math.max(0, y - half);
@@ -326,6 +326,7 @@
         const g = data[i + 1];
         const b = data[i + 2];
 
+        // わずかな差でバラバラにならないよう、色調をまとめてグループ化
         const factor = 8;
         const qR = Math.round(r / factor) * factor;
         const qG = Math.round(g / factor) * factor;
@@ -334,6 +335,7 @@
         const key = `${qR},${qG},${qB}`;
         colorCounts[key] = (colorCounts[key] || 0) + 1;
 
+        // 100ピクセルの中で一番出現頻度が高い色を決定
         if (colorCounts[key] > maxCount) {
           maxCount = colorCounts[key];
           dominantRgb = { r, g, b };
