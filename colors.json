@@ -516,5 +516,3 @@
   { "name": "鼠色", "reading": "ねずみいろ", "hex": "#7D7D7D", "category": "鼠・灰色系", "slug": "nezumi-iro" },
   { "name": "黒鳶", "reading": "くろとび", "hex": "#432F2F", "category": "黒系", "slug": "kurotobi" }
 ]
-
-```
