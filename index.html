@@ -4,12 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>着物・帯 伝統色判別</title>
+
+  <!-- PWA（ホーム画面追加時）のスタンドアロン起動設定 -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
   <style>
     :root {
-      --primary: #592B51;      /* 古代紫：上品な和のメインカラー */
+      --primary: #592B51;      /* 古代紫 */
       --primary-light: #f5eff4;
-      --accent: #C5A059;       /* 金茶：和のアクセントカラー */
-      --bg: #FDFBF7;           /* 生成り色：和紙のような質感 */
+      --accent: #C5A059;       /* 金茶 */
+      --bg: #FDFBF7;           /* 生成り色 */
       --card-bg: #FFFFFF;
       --text: #2C2C2C;
       --text-sub: #666666;
@@ -27,7 +33,6 @@
       line-height: 1.6;
     }
 
-    /* ヘッダー */
     header {
       text-align: center;
       margin-bottom: 20px;
@@ -51,7 +56,6 @@
       font-family: -apple-system, sans-serif;
     }
 
-    /* ボタンエリア */
     .controls {
       text-align: center;
       margin-bottom: 16px;
@@ -74,7 +78,6 @@
     }
     input[type="file"] { display: none; }
 
-    /* キャンバス＆画像表示 */
     .canvas-container {
       position: relative;
       width: 100%;
@@ -104,7 +107,6 @@
       font-family: -apple-system, sans-serif;
     }
 
-    /* 虫眼鏡ルーペ */
     .loupe {
       position: absolute;
       width: 70px;
@@ -129,7 +131,6 @@
       transform: translate(-50%, -50%);
     }
 
-    /* 🌸 判定結果カード */
     .result-card {
       position: fixed;
       bottom: 0;
@@ -217,7 +218,6 @@
   </div>
   <p class="instruction" id="instruction" style="display:none;">※色を調べたい部分を指でタップ・スライドしてください</p>
 
-  <!-- 🌸 固定結果カード -->
   <div class="result-card" id="resultCard">
     <div class="result-header">
       <div class="color-swatch" id="swatch"></div>
@@ -236,206 +236,224 @@
   </div>
 
   <script>
+    // ★ パスワード認証＆自動保持処理（著作権フリー・ブラウザ標準機能）
     const PASS = "kimono";
-    const userPass = prompt("パスワードを入力してください:");
-    if (userPass !== PASS) {
-      alert("パスワードが違います");
-      document.body.innerHTML = "<h3 style='text-align:center; margin-top:50px;'>アクセス権限がありません</h3>";
-    }
-
-    let traditionalColors = [];
-
-    fetch('colors.json')
-      .then(res => res.json())
-      .then(data => { if(Array.isArray(data) && data.length > 0) traditionalColors = data; })
-      .catch(() => {});
-
-    const upload = document.getElementById('upload');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const container = document.getElementById('canvasContainer');
-    const loupe = document.getElementById('loupe');
-    const instruction = document.getElementById('instruction');
-
-    let imgObj = null;
-
-    upload.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const img = new Image();
-      img.onload = () => {
-        imgObj = img;
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-
-        container.style.display = 'block';
-        instruction.style.display = 'block';
-        document.getElementById('resultCard').style.display = 'block';
-        loupe.style.backgroundImage = `url(${img.src})`;
-      };
-      img.src = URL.createObjectURL(file);
-    });
-
-    function handlePointer(e) {
-      if (!imgObj) return;
-
-      const rect = canvas.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-      const relX = (clientX - rect.left) / rect.width;
-      const relY = (clientY - rect.top) / rect.height;
-
-      if (relX < 0 || relX > 1 || relY < 0 || relY > 1) {
-        loupe.style.display = 'none';
-        return;
+    
+    function authenticateUser() {
+      // 1. すでに端末内に認証済みフラグがあるか確認
+      if (localStorage.getItem("kimono_auth_passed") === "true") {
+        return true;
       }
-
-      const x = Math.floor(relX * canvas.width);
-      const y = Math.floor(relY * canvas.height);
-
-      const containerRect = container.getBoundingClientRect();
-      loupe.style.display = 'block';
-      loupe.style.left = `${clientX - containerRect.left}px`;
-      loupe.style.top = `${clientY - containerRect.top}px`;
-      loupe.style.backgroundSize = `${rect.width * 3}px ${rect.height * 3}px`;
-      loupe.style.backgroundPosition = `-${relX * rect.width * 3 - 35}px -${relY * rect.height * 3 - 35}px`;
-
-      const rgb = getDominantRgb(x, y);
-      identifyColor(rgb);
-    }
-
-    // ★ 判定範囲を 100 × 100 ピクセル（計 10,000 ピクセル）に設定
-    function getDominantRgb(x, y) {
-      const sampleSize = 100; // 100x100 = 10,000ピクセル
-      const half = Math.floor(sampleSize / 2);
-      const startX = Math.max(0, x - half);
-      const startY = Math.max(0, y - half);
       
-      // 画像の端をタップした際のエラー防止
-      const width = Math.min(sampleSize, canvas.width - startX);
-      const height = Math.min(sampleSize, canvas.height - startY);
-
-      if (width <= 0 || height <= 0) return { r: 0, g: 0, b: 0 };
-      
-      const imageData = ctx.getImageData(startX, startY, width, height);
-      const data = imageData.data;
-      
-      const colorCounts = {};
-      let maxCount = 0;
-      let dominantRgb = { r: 0, g: 0, b: 0 };
-
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-
-        // 色調を少し丸めて似た色同士をカウント（精度を上げるための量子化処理）
-        const factor = 8;
-        const qR = Math.round(r / factor) * factor;
-        const qG = Math.round(g / factor) * factor;
-        const qB = Math.round(b / factor) * factor;
-
-        const key = `${qR},${qG},${qB}`;
-        colorCounts[key] = (colorCounts[key] || 0) + 1;
-
-        // 10,000ピクセルの中で最も出現頻度が高い色を保持
-        if (colorCounts[key] > maxCount) {
-          maxCount = colorCounts[key];
-          dominantRgb = { r, g, b };
-        }
+      // 2. 未認証の場合はプロンプトを表示
+      const userPass = prompt("パスワードを入力してください:");
+      if (userPass === PASS) {
+        // パスワード一致時、端末に保存
+        localStorage.setItem("kimono_auth_passed", "true");
+        return true;
+      } else {
+        alert("パスワードが違います");
+        document.body.innerHTML = "<h3 style='text-align:center; margin-top:50px;'>アクセス権限がありません</h3>";
+        return false;
       }
-
-      return dominantRgb;
     }
 
-    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handlePointer(e); }, { passive: false });
-    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); handlePointer(e); }, { passive: false });
-    canvas.addEventListener('mousedown', (e) => { if (e.buttons === 1) handlePointer(e); });
-    canvas.addEventListener('mousemove', (e) => { if (e.buttons === 1) handlePointer(e); });
-
-    ['touchend', 'mouseup'].forEach(evt => {
-      window.addEventListener(evt, () => { loupe.style.display = 'none'; });
-    });
-
-    function rgbToLab(r, g, b) {
-      let r1 = r / 255, g1 = g / 255, b1 = b / 255;
-      r1 = r1 > 0.04045 ? Math.pow((r1 + 0.055) / 1.055, 2.4) : r1 / 12.92;
-      g1 = g1 > 0.04045 ? Math.pow((g1 + 0.055) / 1.055, 2.4) : g1 / 12.92;
-      b1 = b1 > 0.04045 ? Math.pow((b1 + 0.055) / 1.055, 2.4) : b1 / 12.92;
-
-      let x = (r1 * 0.4124 + g1 * 0.3576 + b1 * 0.1805) / 0.95047;
-      let y = (r1 * 0.2126 + g1 * 0.7152 + b1 * 0.0722) / 1.00000;
-      let z = (r1 * 0.0193 + g1 * 0.1192 + b1 * 0.9505) / 1.08883;
-
-      x = x > 0.008856 ? Math.cbrt(x) : (7.787 * x) + (16 / 116);
-      y = y > 0.008856 ? Math.cbrt(y) : (7.787 * y) + (16 / 116);
-      z = z > 0.008856 ? Math.cbrt(z) : (7.787 * z) + (16 / 116);
-
-      return {
-        l: (116 * y) - 16,
-        a: 500 * (x - y),
-        b: 200 * (y - z)
-      };
+    // 認証チェック実行
+    if (authenticateUser()) {
+      initApp();
     }
 
-    function hexToRgb(hex) {
-      let c = hex.replace('#', '');
-      if (c.length === 3) c = c.split('').map(x => x + x).join('');
-      const num = parseInt(c, 16);
-      return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
-    }
+    function initApp() {
+      let traditionalColors = [];
 
-    function identifyColor(targetRgb) {
-      if (!traditionalColors || traditionalColors.length === 0) return;
+      fetch('colors.json')
+        .then(res => res.json())
+        .then(data => { if(Array.isArray(data) && data.length > 0) traditionalColors = data; })
+        .catch(() => {});
 
-      const targetLab = rgbToLab(targetRgb.r, targetRgb.g, targetRgb.b);
-      let closest = null;
-      let minDistance = Infinity;
+      const upload = document.getElementById('upload');
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const container = document.getElementById('canvasContainer');
+      const loupe = document.getElementById('loupe');
+      const instruction = document.getElementById('instruction');
 
-      traditionalColors.forEach(color => {
-        const cRgb = hexToRgb(color.hex);
-        const cLab = rgbToLab(cRgb.r, cRgb.g, cRgb.b);
+      let imgObj = null;
 
-        const dL = targetLab.l - cLab.l;
-        const da = targetLab.a - cLab.a;
-        const db = targetLab.b - cLab.b;
+      upload.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
 
-        const chromaWeight = 2.5;
+        const img = new Image();
+        img.onload = () => {
+          imgObj = img;
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
 
-        const targetChroma = Math.sqrt(targetLab.a * targetLab.a + targetLab.b * targetLab.b);
-        const colorChroma = Math.sqrt(cLab.a * cLab.a + cLab.b * cLab.b);
-        
-        let penalty = 0;
-        if (targetChroma > 5 && colorChroma < 3) {
-          penalty = 30; 
-        }
-
-        const dist = Math.sqrt(
-          Math.pow(dL, 2) +
-          Math.pow(da * chromaWeight, 2) +
-          Math.pow(db * chromaWeight, 2)
-        ) + penalty;
-
-        if (dist < minDistance) {
-          minDistance = dist;
-          closest = color;
-        }
+          container.style.display = 'block';
+          instruction.style.display = 'block';
+          document.getElementById('resultCard').style.display = 'block';
+          loupe.style.backgroundImage = `url(${img.src})`;
+        };
+        img.src = URL.createObjectURL(file);
       });
 
-      if (closest) {
-        showResult(closest);
-      }
-    }
+      function handlePointer(e) {
+        if (!imgObj) return;
 
-    function showResult(color) {
-      document.getElementById('swatch').style.backgroundColor = color.hex;
-      document.getElementById('colorName').innerText = color.name;
-      document.getElementById('colorReading').innerText = color.reading;
-      document.getElementById('colorCategory').innerText = `系統: ${color.category || '伝統色'}`;
-      document.getElementById('irocoreLink').href = `https://irocore.com/${color.slug}/`;
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        const relX = (clientX - rect.left) / rect.width;
+        const relY = (clientY - rect.top) / rect.height;
+
+        if (relX < 0 || relX > 1 || relY < 0 || relY > 1) {
+          loupe.style.display = 'none';
+          return;
+        }
+
+        const x = Math.floor(relX * canvas.width);
+        const y = Math.floor(relY * canvas.height);
+
+        const containerRect = container.getBoundingClientRect();
+        loupe.style.display = 'block';
+        loupe.style.left = `${clientX - containerRect.left}px`;
+        loupe.style.top = `${clientY - containerRect.top}px`;
+        loupe.style.backgroundSize = `${rect.width * 3}px ${rect.height * 3}px`;
+        loupe.style.backgroundPosition = `-${relX * rect.width * 3 - 35}px -${relY * rect.height * 3 - 35}px`;
+
+        const rgb = getDominantRgb(x, y);
+        identifyColor(rgb);
+      }
+
+      function getDominantRgb(x, y) {
+        const sampleSize = 100;
+        const half = Math.floor(sampleSize / 2);
+        const startX = Math.max(0, x - half);
+        const startY = Math.max(0, y - half);
+        
+        const width = Math.min(sampleSize, canvas.width - startX);
+        const height = Math.min(sampleSize, canvas.height - startY);
+
+        if (width <= 0 || height <= 0) return { r: 0, g: 0, b: 0 };
+        
+        const imageData = ctx.getImageData(startX, startY, width, height);
+        const data = imageData.data;
+        
+        const colorCounts = {};
+        let maxCount = 0;
+        let dominantRgb = { r: 0, g: 0, b: 0 };
+
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+
+          const factor = 8;
+          const qR = Math.round(r / factor) * factor;
+          const qG = Math.round(g / factor) * factor;
+          const qB = Math.round(b / factor) * factor;
+
+          const key = `${qR},${qG},${qB}`;
+          colorCounts[key] = (colorCounts[key] || 0) + 1;
+
+          if (colorCounts[key] > maxCount) {
+            maxCount = colorCounts[key];
+            dominantRgb = { r, g, b };
+          }
+        }
+
+        return dominantRgb;
+      }
+
+      canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handlePointer(e); }, { passive: false });
+      canvas.addEventListener('touchmove', (e) => { e.preventDefault(); handlePointer(e); }, { passive: false });
+      canvas.addEventListener('mousedown', (e) => { if (e.buttons === 1) handlePointer(e); });
+      canvas.addEventListener('mousemove', (e) => { if (e.buttons === 1) handlePointer(e); });
+
+      ['touchend', 'mouseup'].forEach(evt => {
+        window.addEventListener(evt, () => { loupe.style.display = 'none'; });
+      });
+
+      function rgbToLab(r, g, b) {
+        let r1 = r / 255, g1 = g / 255, b1 = b / 255;
+        r1 = r1 > 0.04045 ? Math.pow((r1 + 0.055) / 1.055, 2.4) : r1 / 12.92;
+        g1 = g1 > 0.04045 ? Math.pow((g1 + 0.055) / 1.055, 2.4) : g1 / 12.92;
+        b1 = b1 > 0.04045 ? Math.pow((b1 + 0.055) / 1.055, 2.4) : b1 / 12.92;
+
+        let x = (r1 * 0.4124 + g1 * 0.3576 + b1 * 0.1805) / 0.95047;
+        let y = (r1 * 0.2126 + g1 * 0.7152 + b1 * 0.0722) / 1.00000;
+        let z = (r1 * 0.0193 + g1 * 0.1192 + b1 * 0.9505) / 1.08883;
+
+        x = x > 0.008856 ? Math.cbrt(x) : (7.787 * x) + (16 / 116);
+        y = y > 0.008856 ? Math.cbrt(y) : (7.787 * y) + (16 / 116);
+        z = z > 0.008856 ? Math.cbrt(z) : (7.787 * z) + (16 / 116);
+
+        return {
+          l: (116 * y) - 16,
+          a: 500 * (x - y),
+          b: 200 * (y - z)
+        };
+      }
+
+      function hexToRgb(hex) {
+        let c = hex.replace('#', '');
+        if (c.length === 3) c = c.split('').map(x => x + x).join('');
+        const num = parseInt(c, 16);
+        return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+      }
+
+      function identifyColor(targetRgb) {
+        if (!traditionalColors || traditionalColors.length === 0) return;
+
+        const targetLab = rgbToLab(targetRgb.r, targetRgb.g, targetRgb.b);
+        let closest = null;
+        let minDistance = Infinity;
+
+        traditionalColors.forEach(color => {
+          const cRgb = hexToRgb(color.hex);
+          const cLab = rgbToLab(cRgb.r, cRgb.g, cRgb.b);
+
+          const dL = targetLab.l - cLab.l;
+          const da = targetLab.a - cLab.a;
+          const db = targetLab.b - cLab.b;
+
+          const chromaWeight = 2.5;
+
+          const targetChroma = Math.sqrt(targetLab.a * targetLab.a + targetLab.b * targetLab.b);
+          const colorChroma = Math.sqrt(cLab.a * cLab.a + cLab.b * cLab.b);
+          
+          let penalty = 0;
+          if (targetChroma > 5 && colorChroma < 3) {
+            penalty = 30; 
+          }
+
+          const dist = Math.sqrt(
+            Math.pow(dL, 2) +
+            Math.pow(da * chromaWeight, 2) +
+            Math.pow(db * chromaWeight, 2)
+          ) + penalty;
+
+          if (dist < minDistance) {
+            minDistance = dist;
+            closest = color;
+          }
+        });
+
+        if (closest) {
+          showResult(closest);
+        }
+      }
+
+      function showResult(color) {
+        document.getElementById('swatch').style.backgroundColor = color.hex;
+        document.getElementById('colorName').innerText = color.name;
+        document.getElementById('colorReading').innerText = color.reading;
+        document.getElementById('colorCategory').innerText = `系統: ${color.category || '伝統色'}`;
+        document.getElementById('irocoreLink').href = `https://irocore.com/${color.slug}/`;
+      }
     }
   </script>
 </body>
